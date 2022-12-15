@@ -93,9 +93,11 @@ def read_input_pins(pin_num):
 
 # read the temperature sensor
 def read_temp():
+    global dht22_pin
+    dht22_pin = my_import(dht22_pin)
     dht = DHT22(dht22_pin, use_pulseio=False)
-    print(dht.temperature)
-    print(dht.humidity)
+    print("Temperature: " + str(dht.temperature) + "C")
+    print("Humidity: " + str(dht.humidity) + "%")
 
 # read the configuration file
 read_config()
@@ -103,49 +105,48 @@ setup()
 
 # tcp connection
 # create a socket object
-clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# connect to servidor central with ip = ip_servidor_central and port = porta_servidor_central
-host = ip_servidor_central
-port = porta_servidor_central
+# # connect to servidor central with ip = ip_servidor_central and port = porta_servidor_central
+# host = ip_servidor_central
+# port = porta_servidor_central
 
-while True:
-    print("Attempting to connect to %s:%d" % (host, port))
-    try:
-        # attempt to establish a connection to the server
-        clientsocket.connect((host, port))
+# while True:
+#     print("Attempting to connect to %s:%d" % (host, port))
+#     try:
+#         # attempt to establish a connection to the server
+#         clientsocket.connect((host, port))
 
-        # if the connection is successful, break out of the loop
-        break
-    except socket.error:
-        print("Connection failed, retrying...")
-        # if the connection fails, wait for a second and try again
-        time.sleep(1)
+#         # if the connection is successful, break out of the loop
+#         break
+#     except socket.error:
+#         print("Connection failed, retrying...")
+#         # if the connection fails, wait for a second and try again
+#         time.sleep(1)
 
-# create a JSON object
-data = {"message": "Hello from the client!"}
+# # create a JSON object
+# data = {"message": "Hello from the client!"}
 
-# convert the JSON object to bytes
-json_data = json.dumps(data).encode()
+# # convert the JSON object to bytes
+# json_data = json.dumps(data).encode()
 
-# send the data to the server
-clientsocket.send(json_data)
+# # send the data to the server
+# clientsocket.send(json_data)
 
-# receive data from the server
-response = clientsocket.recv(1024)
+# # receive data from the server
+# response = clientsocket.recv(1024)
 
-# parse the received data
-json_response = json.loads(response.decode())
+# # parse the received data
+# json_response = json.loads(response.decode())
 
-# print the parsed data
-print(json_response)
+# # print the parsed data
+# print(json_response)
 
 
 
 # set L_01 to high
-# set_output_pins(1, outputs_pin['L_01'])
+set_output_pins(1, outputs_pin['Lâmpada 01'])
 
-# #read the temperature
-# temperature, humidity = read_temp()
-# print("Temperature: " + str(dht22.temperature) + "C")
-# print("Humidity: " + str(dht22.humidity) + "%")
+#read the temperature
+read_temp()
+
