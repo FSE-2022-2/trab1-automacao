@@ -96,8 +96,16 @@ def read_temp():
     global dht22_pin
     dht22_pin = my_import(dht22_pin)
     dht = DHT22(dht22_pin, use_pulseio=False)
-    print("Temperature: " + str(dht.temperature) + "C")
-    print("Humidity: " + str(dht.humidity) + "%")
+    
+    # loop to read temp
+    while True:
+        print("Temperatura: "+str(dht.temperature)+"C")
+        print("Humidade: "+str(dht.humidity)+"%")
+        time.sleep(2)
+
+# check alarm
+def check_alarm():
+    pass
 
 # read the configuration file
 read_config()
