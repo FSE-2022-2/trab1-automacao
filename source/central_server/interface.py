@@ -26,13 +26,24 @@ def read_value(chamber_id, key):
 def update_value(chamber_id, data):
     pass    
 
-# function for interface
+# function for getting log csv
+def get_log_csv():
+    pass
+
+# function for dashboard
+# dashboard in ascii art to show the current status and values of the chambers
+def dashboard():
+    pass
+
+# function for interface /:maybe needs to show temp and humidity in this main menu, and update values after 2 seconds each time
 def interface():
     print('''
     1. send action signal
     2. read value
     3. update value
-    4. exit
+    4. get log csv
+    5. Dashboard
+    0. exit
     ''')
     option = input('Option: ')
     if option == '1':
@@ -51,6 +62,10 @@ def interface():
         value = input('Value: ')
         update_value(chamber_id, {key: value})
     elif option == '4':
+        get_log_csv()
+    elif option == '5':
+        dashboard()
+    elif option == '0':
         exit()
     else:
         print('Invalid option')

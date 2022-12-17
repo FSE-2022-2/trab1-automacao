@@ -2,7 +2,21 @@ import RPi.GPIO as GPIO
 from adafruit_dht import DHT22
 import board
 import time
-from ..config import SENSOR_TEMPERATURA, IP_SERVIDOR_CENTRAL, INPUTS_PIN, my_import, IP_SERVIDOR_DISTRIBUIDO, OUTPUTS_PIN, PORTA_SERVIDOR_CENTRAL, PORTA_SERVIDOR_DISTRIBUIDO, DHT22_PIN
+# import os
+# import sys
+
+# # Get the current working directory of config.py file 'source/config/config.py'
+# __file__ = 'source/config/config.py'
+# module_path = os.path.dirname(os.path.realpath(__file__))
+
+# # Check if the module exists
+# if os.path.exists(module_path):
+#     # Add the module to the Python path
+#     sys.path.append(module_path)
+# else:
+#     print("The module does not exist")
+
+from config import SENSOR_TEMPERATURA, IP_SERVIDOR_CENTRAL, INPUTS_PIN, my_import, IP_SERVIDOR_DISTRIBUIDO, OUTPUTS_PIN, PORTA_SERVIDOR_CENTRAL, PORTA_SERVIDOR_DISTRIBUIDO, DHT22_PIN
 
 # print('outputs_pin: ', outputs_pin)
 # function to set up the GPIO pins
