@@ -12,19 +12,18 @@ import board
 import time
 import json
 import socket
-import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # TODO get this from config.json
-
 with open('config.json') as json_data:
     data = json.load(json_data)
-    HOST = data.get('ip_servidor_central')
+    HOST = data.get('ip_servidor_distribuido')
     PORT = data.get('porta_servidor_distribuido')
-    MAIN_SERVER_ADDRESS = ':'.join([
+    MAIN_SERVER_ADDRESS = 'http://' + ':'.join([
         data.get('ip_servidor_central'),
         str(data.get('porta_servidor_central'))
     ])
+
 
 
 def my_import(name):
@@ -104,6 +103,11 @@ class DistributedServerHTTPRequestHandler(BaseHTTPRequestHandler):
         """
         data = json.loads(object)
         self.components.update(data)
+        # update values on main server
+        try:
+            self.update_values_on_main_server()
+        except Exception as err:
+            logging.error(err)
         return {
             'response': f'updated value {data} successfully',
             'status': 200
@@ -149,7 +153,7 @@ class GPIOController:
         self.SERVER_ADDRESS = server_address
         self.read_config()
         self.setup()
-        self.set_output_pins(1, self.OUTPUTS_PIN['Lâmpada 01'])
+
 
     def update_values_on_server(self):
         logging.info(f'updating values on {self.SERVER_ADDRESS}')
@@ -157,9 +161,11 @@ class GPIOController:
         payload = {
             'command': ':'.join(['update_value', json.dumps(updated_data)])
         }
-
         response = requests.post(self.SERVER_ADDRESS, json=payload)
-        logging.info(response.content)
+        # get only lampada 01 status
+        lampada_01_status = updated_data.get('Lâmpada 01')
+        logging.info(lampada_01_status)
+        # logging.info(response.content)
         return response
 
     def get_action(self):
@@ -177,12 +183,22 @@ class GPIOController:
             logging.info('No action was found')
             return
 
+        logging.info(f'event: {event}')
         target = action.get('target')
+        import ipdb; ipdb.set_trace()
         self.events.get(event)(target)
 
     def toggle(self, target):
+        # log actual value
+        logging.info(f'toggling {target}')
         actual_value = self.read_input_pins(self.OUTPUTS_PIN[target])
-        self.set_output_pins(not bool(actual_value), self.OUTPUTS_PIN[target])
+        print(f'actual value on {target}: {actual_value}')
+        ans = self.set_output_pins(not actual_value, self.OUTPUTS_PIN[target])
+        #log new value
+        print(f'new value on {target}: {ans}')
+        print('------------------')
+        logging.info(f'new value: {self.read_input_pins(self.OUTPUTS_PIN[target])}')
+        import ipdb; ipdb.set_trace()
 
     @property
     def events(self):
@@ -196,6 +212,8 @@ class GPIOController:
             logging.info('updating data')
             self.update_values_on_server()
             time.sleep(2)
+
+
 
     def read_config(self):
         with open('config.json') as json_data:
@@ -261,7 +279,7 @@ class GPIOController:
 
     # set the output pins to the desired state
     def set_output_pins(self, high, pin_num):
-        if bool(high):
+        if high:
             GPIO.output(pin_num, GPIO.HIGH)
             return
         GPIO.output(pin_num, GPIO.LOW)
@@ -328,5 +346,4 @@ if __name__ == '__main__':
     controller_thread.start()
 
     httpd.serve_forever()
-
     controller_thread.join()

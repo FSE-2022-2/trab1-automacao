@@ -6,23 +6,13 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 # TODO get this from config.json
-HOST = 'localhost'
+HOST = '164.41.98.26'
 PORT = 10000
 
 
 class MainServerHTTPRequestHandler(BaseHTTPRequestHandler):
 
-    chambers = {
-        'sala1': {
-            'temperature': '19ºC',
-            'people_count': 3,
-            'light_sources': {
-                'light_A': {'status': 'on'},
-                'light_B': {'status': 'off'}
-            }
-        }
-
-    }
+    chambers = {}
 
     def do_GET(self):
         self.send_response(400)
@@ -40,7 +30,7 @@ class MainServerHTTPRequestHandler(BaseHTTPRequestHandler):
         except Exception as err:
             response_data['status'] = 400
             response_data['response'] = str(err)
-        
+
         self.send_response(response_data.get('status'))
         self.end_headers()
         response = json.dumps(response_data, indent=2).encode('utf-8')
@@ -63,14 +53,21 @@ class MainServerHTTPRequestHandler(BaseHTTPRequestHandler):
             raise Exception('Action not in ALLOWED_COMMANDS')
 
         return self.allowed_commands.get(action)(chamber_id, object)
-        
+
     def update_value(self, chamber_id, object):
         """
         Read status of an sensor or other part of the system
         Object must be a JSON string.
         """
         data = json.loads(object)
-        self.chambers[chamber_id].update(data)
+        print(f'updating{chamber_id}{str(data)}')
+        if self.chambers.get(chamber_id):
+            self.chambers[chamber_id].update(data)
+        else:
+            self.chambers[chamber_id] = data
+        print(self.chambers)
+        #import ipdb;ipdb.set_trace()
+        logging.info(f'Updated value {data} successfully from {chamber_id}')
         return {
             'response': f'updated value {data} successfully',
             'status': 200
@@ -82,7 +79,16 @@ class MainServerHTTPRequestHandler(BaseHTTPRequestHandler):
             'response': self.chambers.get(chamber_id, {}).get(key),
             'status': 200
         }
-        
+
+    def read_all(self, chamber_id, object):
+        """Read status of an sensor or other part of the system"""
+        print(self.chambers)
+        logging.info(f'Read all values from {chamber_id}')
+        return {
+            'response': self.chambers,
+            'status': 200
+        }
+
     def send_action_signal(self, chamber_id, object):
         """
         Send signal to distributed server to make an action
@@ -106,7 +112,8 @@ class MainServerHTTPRequestHandler(BaseHTTPRequestHandler):
         return {
             'update_value': self.update_value,
             'read_value': self.read_value,
-            'send_action_signal': self.send_action_signal
+            'send_action_signal': self.send_action_signal,
+            'read_all': self.read_all
         }
 
 
