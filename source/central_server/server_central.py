@@ -128,5 +128,5 @@ class MainServerHTTPRequestHandler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     address = (HOST, PORT)
     httpd = HTTPServer(address, MainServerHTTPRequestHandler)
-    httpd.serve_forever()
     print('Server running at http://{}:{}'.format(HOST, PORT))
+    httpd.serve_forever()

@@ -3,6 +3,10 @@ import logging
 import requests
 import json
 from prompt_toolkit import PromptSession
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+import csv
+from colored import fg, bg, attr
 
 # TODO get this from config.json
 with open('config.json') as json_data:
@@ -32,7 +36,18 @@ class Interface():
         chambers_id = list(response.json().get('response').keys())
         if chambers_id not in self.chambers_id:
             self.chambers_id.append(chambers_id)
-        print(self.chambers_id)
+        if self.chambers_id == []:
+            fg('red')
+            print('Nenhuma sala conectada')
+            attr('reset')
+        else:      
+            chambers_id = self.chambers_id[-1]
+            for chamber_id in chambers_id:
+                # set color blue
+                print(fg('blue'), end='')
+                print(f'Sala <{chamber_id}> conectada: ', end=';')
+            # reset color
+            print(attr('reset'))
         logging.info(f'{response.status_code} - {response.content}')
         return response.content
 
@@ -91,57 +106,57 @@ class Interface():
             'command': f'toggle:{component}'
         }
         # response = self.send_command(data)
-        response = requests.post(MAIN_SERVER_ADDRESS, json={
-                                 'command': 'send_action:{"toggle":"Lâmpada 02" }'})
+        response = requests.post(MAIN_SERVER_ADDRESS, json=data)
         return response.content
 
-    # def completer(self, text, state):
-    #     options = ['1', '2', '3', '4', '5', 'q']
-    #     return [option for option in options if option.startswith(text)]
-
     def interface(self):
-        # get all chambers from server
-        chambers = self.get_all_chambers()
-        chambers = json.loads(chambers)
-        chambers = chambers.get('response')
-        # print chambers
-        print('Chambers:')
-        for chamber in chambers:
-            print(chamber)
-        session = PromptSession()
+        # first load
+        _ = json.loads(self.read_all('sala1'))  #default chamber
+        history = FileHistory('history.csv')
+        session = PromptSession(history=history)
+        # get session history of commands
         while True:
+            # Display menu of available commands
+            #print colored header text
+            print(fg('green') + 'TUI Menu' + attr('reset'))
+            print('1: Selecionar sala')
+            print('2: Enviar comando para ativar/desativar componente')
+            print('3: Ler dados de uma sala')
+            print('4: Ler dados de todas as salas conectadas')
+            print('5: Obtenha o histórico de comandos salvos no log CSV')
+            print(fg('red')+'q: Quit'+attr('reset'))
             command = session.prompt(
                 # print temp and humidity real time'
                 'Enter a command (1-5, q to quit): ',
-                # completer=self.completer
             )
             if command == '1':
                 self.chamber_id = session.prompt('Enter chamber ID(Ex: sala1, sala2): ')
             elif command == '2':
               # send command to toggle
                 if self.chamber_id:
-                    component = session.prompt('Enter component: ')
+                    component = session.prompt('Enter component: ', auto_suggest=AutoSuggestFromHistory())
                     # print(self.send_toggle_command(self.chamber_id, component))
                     # dummy response
                     print(self.send_toggle_command(self.chamber_id, component))
             elif command == '3':
                 data = json.loads(self.read_all(self.chamber_id))
-                    # parse data
-                    # {'response': {self.chamber_id: {'Sensor de Presença': 0, 'Sensor de Fumaça': 0, 'Sensor de Janela': 0, 'Sensor de Porta': 0,
-                    # 'Sensor de Contagem de Pessoas Entrada': 0, 'Sensor de Contagem de Pessoas Saída': 0, 'Lâmpada 01': 1, 'Lâmpada 02': 0, 'Projetor Multimidia': 1,
-                    # 'Ar-Condicionado (1º Andar)': 0, 'Sirene do Alarme': 0, 'Sensor de Temperatura e Umidade': []}}, 'status': 200}
-                print(data)
                 self.print_data(data, self.chamber_id)
             elif command == '4':
-                if self.chamber_id:
-                    print(self.get_chamber_humidity(self.chamber_id))
-                else:
-                    print('No chamber selected')
+                if not self.chambers_id:
+                    print('Nenhuma sala foi conectada, aguarde update...')
+                    continue
+                chambers_id = self.chambers_id[-1]
+                for chamber_id in chambers_id:
+                    data = json.loads(self.read_all(chamber_id))
+                    self.print_data(data, chamber_id)
             elif command == '5':
-                if self.chamber_id:
-                    print(self.get_chamber_light(self.chamber_id))
-                else:
-                    print('No chamber selected')
+                # Load the command history from the file in list format
+                commands = history.load()
+                # read history from file
+                with open('history.csv', 'r') as f:
+                    reader = csv.reader(f)
+                    for row in reader:
+                        print(row)
             elif command == 'q':
                 break
             else:
