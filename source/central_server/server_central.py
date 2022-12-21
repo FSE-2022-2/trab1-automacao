@@ -6,8 +6,16 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 # TODO get this from config.json
-HOST = '164.41.98.26'
-PORT = 10000
+with open('config.json') as json_data:
+    data = json.load(json_data)
+    HOST = data.get('ip_servidor_central')
+    PORT = data.get('porta_servidor_central')
+    MAIN_SERVER_ADDRESS = 'http://' + ':'.join([
+        data.get('ip_servidor_central'),
+        str(data.get('porta_servidor_central'))
+    ])
+# HOST = '164.41.98.26'
+# PORT = 10000
 
 
 class MainServerHTTPRequestHandler(BaseHTTPRequestHandler):
@@ -121,3 +129,4 @@ if __name__ == '__main__':
     address = (HOST, PORT)
     httpd = HTTPServer(address, MainServerHTTPRequestHandler)
     httpd.serve_forever()
+    print('Server running at http://{}:{}'.format(HOST, PORT))

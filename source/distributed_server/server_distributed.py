@@ -14,6 +14,7 @@ import json
 import socket
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+CHAMBER_ID = ''
 # TODO get this from config.json
 with open('config.json') as json_data:
     data = json.load(json_data)
@@ -23,6 +24,7 @@ with open('config.json') as json_data:
         data.get('ip_servidor_central'),
         str(data.get('porta_servidor_central'))
     ])
+    CHAMBER_ID = data.get('nome')
 
 
 
@@ -38,8 +40,9 @@ logging.basicConfig(level=logging.DEBUG)
 # logging.setFormatter(logging.Formatter())
 
 class DistributedServerHTTPRequestHandler(BaseHTTPRequestHandler):
-
-    CHAMBER_ID = 'sala1'
+    #get chamber id from config.json
+    CHAMBER_ID = CHAMBER_ID
+    # CHAMBER_ID = 'sala1'
 
     last_action = {}
 
@@ -72,6 +75,7 @@ class DistributedServerHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def update_values_on_main_server(self):
         components_json = json.dumps(self.components)
+  
         data = {
             'chamber_id': self.CHAMBER_ID,
             'command': f'update_value:{components_json}'

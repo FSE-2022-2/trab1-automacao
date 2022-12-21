@@ -21,3 +21,12 @@ python3 interface.py
 ```bash
 python3 server_distributed.py
 ```
+
+### Requisitos pra rodar o projeto
+```bash
+pip3 install -r requirements.txt
+```
+> Pode dar erro no requirements.txt, então instale manualmente a adafruit-circuitpython-dht
+```bash
+pip3 install adafruit-circuitpython-dht
+```
