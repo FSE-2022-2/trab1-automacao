@@ -30,3 +30,5 @@ pip3 install -r requirements.txt
 ```bash
 pip3 install adafruit-circuitpython-dht
 ```
+### Video da Apresentação
+[![Watch the video](https://img.youtube.com/vi/bQ6lO6SFcgM/maxresdefault.jpg)](https://youtu.be/bQ6lO6SFcgM)
